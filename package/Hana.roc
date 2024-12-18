@@ -1,5 +1,6 @@
 module [
     statusResponse,
+    textResponse
 ]
 
 import pf.Http exposing [Response]
