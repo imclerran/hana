@@ -1,5 +1,5 @@
 on:
-  pull_request:
+  push:
   workflow_dispatch:
 
 # this cancels workflows currently in progress if you start a new one
@@ -8,7 +8,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-examples:
+  test-package:
     runs-on: [ubuntu-22.04]
     steps:
       - uses: actions/checkout@v3
