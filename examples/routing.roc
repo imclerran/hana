@@ -18,7 +18,7 @@ respond = \req, _ ->
             [""] -> Hana.statusResponse 200
             ["flower"] -> Hana.textResponse 200 "this is the /flower route"
             ["flower", "rose"] -> Hana.textResponse 200 "this is the /flower/rose route"
-            ["blossom", ..] -> Hana.textResponse 200 "this is the /blossom/* route"
+            ["blossom", colour] -> Hana.textResponse 200 "this is the /blossom route with colour: $(colour)"
             _ -> Hana.statusResponse 404
 
     Task.ok response
