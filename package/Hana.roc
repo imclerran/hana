@@ -8,18 +8,19 @@ module [
 import pf.Http exposing [Request, Response]
 import pf.Url
 
-## HTTP Response with the specified status code.
+### Create a HTTP response with the required status code.
 statusResponse : U16 -> Response
 statusResponse = \status ->
     { status, headers: [], body: [] }
 
-## HTTP Response with the specified status code and body.
-## "text/plain; charset=utf-8" content type header is added.
+## Create a HTTP response with text content.
+##
+## The `content-type` header will be set to `text/plain`.
 textResponse : U16, Str -> Response
 textResponse = \status, body ->
     { status, headers: [{ name: "Content-Type", value: "text/plain; charset=utf-8" }], body: Str.toUtf8 body }
 
-## Create a JSON response.
+## Create a HTTP response with JSON content.
 ##
 ## The `content-type` header will be set to `application/json`.
 jsonResponse : U16, List U8 -> Response
