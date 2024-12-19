@@ -33,8 +33,8 @@ pathSegments = \req ->
     |> Url.fromStr
     |> Url.path
     |> Str.splitOn "/"
-    # First item is always an empty string so drop it
-    |> List.dropFirst 1
+    # This handles trailing slashes so that pattern matching for routing is simpler
+    |> List.dropIf Str.isEmpty
 
 # Tests
 expect
