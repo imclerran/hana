@@ -1,9 +1,11 @@
 module [
     statusResponse,
-    textResponse
+    textResponse,
+    pathSegments
 ]
 
-import pf.Http exposing [Response]
+import pf.Http exposing [Request, Response]
+import pf.Url
 
 ## HTTP Response with the specified status code.
 statusResponse : U16 -> Response
@@ -15,6 +17,16 @@ statusResponse = \status ->
 textResponse : U16, Str -> Response
 textResponse = \status, body ->
     { status, headers: [{ name: "Content-Type", value: "text/plain; charset=utf-8" }], body: Str.toUtf8 body }
+
+## Get the path segments from the request url.
+pathSegments : Request -> List Str
+pathSegments = \req ->
+    req.url
+    |> Url.fromStr
+    |> Url.path
+    |> Str.splitOn "/"
+    # First item is always an empty string so drop it
+    |> List.dropFirst 1
 
 # Tests
 expect
