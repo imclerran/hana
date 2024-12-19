@@ -15,10 +15,15 @@ respond = \req, _ ->
 
     response =
         when Hana.pathSegments req is
-            [""] -> Hana.statusResponse 200
+            # matches "/"
+            [] -> Hana.statusResponse 200
+            # matches "/flower"
             ["flower"] -> Hana.textResponse 200 "this is the /flower route"
+            # matches "/flower/rose"
             ["flower", "rose"] -> Hana.textResponse 200 "this is the /flower/rose route"
+            # matches "/blossom/:colour"
             ["blossom", colour] -> Hana.textResponse 200 "this is the /blossom route with colour: $(colour)"
+            # matches all other paths
             _ -> Hana.statusResponse 404
 
     Task.ok response
