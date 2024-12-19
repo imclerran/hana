@@ -1,1 +1,2 @@
-examples/simple
+examples/*
+!examples/*.roc
