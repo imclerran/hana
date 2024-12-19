@@ -12,6 +12,13 @@ server = { init: Task.ok {}, respond }
 
 respond : Request, Model -> Task Response [ServerErr Str]_
 respond = \req, _ ->
-    when Hana.pathSegments req is
-        [""] -> Task.ok (Hana.statusResponse 200)
-        _ -> Task.ok (Hana.statusResponse 404)
+
+    response =
+        when Hana.pathSegments req is
+            [""] -> Hana.statusResponse 200
+            ["flower"] -> Hana.textResponse 200 "this is the /flower route"
+            ["flower", "rose"] -> Hana.textResponse 200 "this is the /flower/rose route"
+            ["blossom", ..] -> Hana.textResponse 200 "this is the /blossom/* route"
+            _ -> Hana.statusResponse 404
+
+    Task.ok response
