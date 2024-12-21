@@ -5,6 +5,7 @@ app [Model, server] {
 }
 
 import pf.Http exposing [Request, Response]
+import pf.Url
 import json.Json
 import hana.Hana
 
@@ -15,8 +16,13 @@ server = { init: Task.ok {}, respond }
 respond : Request, Model -> Task Response [ServerErr Str]_
 respond = \req, _ ->
 
+    url =
+        req.url
+        |> Url.fromStr
+        |> Url.path
+
     response =
-        when Hana.pathSegments req is
+        when Hana.pathSegments url is
             [] -> Hana.statusResponse 200
             ["json"] -> handle_json req
             _ -> Hana.statusResponse 404
