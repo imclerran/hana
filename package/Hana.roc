@@ -5,10 +5,10 @@ module [
     pathSegments,
 ]
 
-import pf.Http exposing [Request, Response]
-import pf.Url
+## Internal type based on the basic-webserver implementation.
+Response : { status : U16, headers : List { name : Str, value : Str }, body : List U8 }
 
-### Create a HTTP response with the required status code.
+## Create a HTTP response with the required status code.
 statusResponse : U16 -> Response
 statusResponse = \status ->
     { status, headers: [], body: [] }
@@ -28,11 +28,9 @@ jsonResponse = \status, body ->
     { status, headers: [{ name: "Content-Type", value: "application/json; charset=utf-8" }], body: body }
 
 ## Get the path segments from the request url.
-pathSegments : Request -> List Str
-pathSegments = \req ->
-    req.url
-    |> Url.fromStr
-    |> Url.path
+pathSegments : Str -> List Str
+pathSegments = \url ->
+    url
     |> Str.splitOn "/"
     # This handles trailing slashes so that pattern matching for routing is simpler
     |> List.dropIf Str.isEmpty
