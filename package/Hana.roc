@@ -3,6 +3,7 @@ module [
     textResponse,
     jsonResponse,
     pathSegments,
+    htmlResponse,
 ]
 
 ## Internal type based on the basic-webserver implementation.
@@ -27,6 +28,13 @@ jsonResponse : U16, List U8 -> Response
 jsonResponse = \status, body ->
     { status, headers: [{ name: "Content-Type", value: "application/json; charset=utf-8" }], body: body }
 
+## Create a HTTP response with HTML content.
+##
+## The `content-type` header will be set to `text/html`.
+htmlResponse : U16, List U8 -> Response
+htmlResponse = \status, body ->
+    { status, headers: [{ name: "Content-Type", value: "text/html; charset=utf-8" }], body: body }
+
 ## Get the path segments from the request url.
 pathSegments : Str -> List Str
 pathSegments = \url ->
@@ -49,6 +57,11 @@ expect
 expect
     actual = jsonResponse 200 (Str.toUtf8 "{\"message\": \"Hello from Hana!\"}")
     expected = { status: 200, headers: [{ name: "Content-Type", value: "application/json; charset=utf-8" }], body: Str.toUtf8 "{\"message\": \"Hello from Hana!\"}" }
+    actual == expected
+
+expect
+    actual = htmlResponse 200 (Str.toUtf8 "<h1>Hello from Hana!</h1>")
+    expected = { status: 200, headers: [{ name: "Content-Type", value: "text/html; charset=utf-8" }], body: Str.toUtf8 "<h1>Hello from Hana!</h1>" }
     actual == expected
 
 expect
