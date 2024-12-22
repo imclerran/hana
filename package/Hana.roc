@@ -50,3 +50,27 @@ expect
     actual = jsonResponse 200 (Str.toUtf8 "{\"message\": \"Hello from Hana!\"}")
     expected = { status: 200, headers: [{ name: "Content-Type", value: "application/json; charset=utf-8" }], body: Str.toUtf8 "{\"message\": \"Hello from Hana!\"}" }
     actual == expected
+
+expect
+    actual = pathSegments "/"
+    expected = []
+    actual == expected
+
+expect
+    actual = pathSegments "/test"
+    expected = ["test"]
+    actual == expected
+
+expect
+    actual = pathSegments "/test/"
+    expected = ["test"]
+    actual == expected
+
+expect
+    actual = pathSegments "/test//"
+    expected = ["test"]
+    actual == expected
+expect
+    actual = pathSegments "/test/1"
+    expected = ["test", "1"]
+    actual == expected
