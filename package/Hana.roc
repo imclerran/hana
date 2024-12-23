@@ -43,6 +43,11 @@ pathSegments = \url ->
     # This handles trailing slashes so that pattern matching for routing is simpler
     |> List.dropIf Str.isEmpty
 
+prependHeader : Response, { name : Str, value : Str } -> Response
+prependHeader = \response, header ->
+    headers = List.prepend response.headers header
+    { response & headers }
+
 # Tests
 expect
     actual = statusResponse 200
@@ -86,4 +91,20 @@ expect
 expect
     actual = pathSegments "/test/1"
     expected = ["test", "1"]
+    actual == expected
+
+expect
+    actual =
+        statusResponse 200
+        |> prependHeader { name: "Content-Type", value: "text/html; charset=utf-8" }
+        |> prependHeader { name: "X-Roc-Package", value: "hana" }
+
+    expected = {
+        status: 200,
+        headers: [
+            { name: "X-Roc-Package", value: "hana" },
+            { name: "Content-Type", value: "text/html; charset=utf-8" },
+        ],
+        body: [],
+    }
     actual == expected
