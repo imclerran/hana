@@ -4,6 +4,10 @@ module [
     jsonResponse,
     pathSegments,
     htmlResponse,
+    prependHeader,
+    ok,
+    badRequest,
+    notFound,
 ]
 
 ## Internal type based on the basic-webserver implementation.
@@ -35,6 +39,18 @@ htmlResponse : U16, List U8 -> Response
 htmlResponse = \status, body ->
     { status, headers: [{ name: "Content-Type", value: "text/html; charset=utf-8" }], body: body }
 
+## Create an empty response with status code 404: Not found.
+notFound : Response
+notFound = { status: 404, body: [], headers: [] }
+
+## Create an empty response with status code 400: Bad request.
+badRequest : Response
+badRequest = { status: 400, body: [], headers: [] }
+
+## Create an empty response with status code 200: OK.
+ok : Response
+ok = { status: 200, body: [], headers: [] }
+
 ## Get the path segments from the request url.
 pathSegments : Str -> List Str
 pathSegments = \url ->
@@ -43,6 +59,9 @@ pathSegments = \url ->
     # This handles trailing slashes so that pattern matching for routing is simpler
     |> List.dropIf Str.isEmpty
 
+## Prepend to the list of response headers.
+##
+## No validation is done to check for duplicate headers.
 prependHeader : Response, { name : Str, value : Str } -> Response
 prependHeader = \response, header ->
     headers = List.prepend response.headers header
@@ -67,6 +86,21 @@ expect
 expect
     actual = htmlResponse 200 (Str.toUtf8 "<h1>Hello from Hana!</h1>")
     expected = { status: 200, headers: [{ name: "Content-Type", value: "text/html; charset=utf-8" }], body: Str.toUtf8 "<h1>Hello from Hana!</h1>" }
+    actual == expected
+
+expect
+    actual = notFound
+    expected = { status: 404, headers: [], body: [] }
+    actual == expected
+
+expect
+    actual = badRequest
+    expected = { status: 400, headers: [], body: [] }
+    actual == expected
+
+expect
+    actual = ok
+    expected = { status: 200, headers: [], body: [] }
     actual == expected
 
 expect
