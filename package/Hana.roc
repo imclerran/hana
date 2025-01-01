@@ -11,8 +11,26 @@ module [
     requireMethod,
 ]
 
-## Internal type based on the basic-webserver implementation.
-Response : { status : U16, headers : List { name : Str, value : Str }, body : List U8 }
+## Internal types based on the basic-webserver implementation.
+Response : { status : U16, headers : List Header, body : List U8 }
+
+Request : {
+    method : Method,
+    headers : List Header,
+    url : Str,
+    mimeType : Str,
+    body : List U8,
+    timeout : TimeoutConfig,
+}
+
+TimeoutConfig : [TimeoutMilliseconds U64, NoTimeout]
+
+Method : [Options, Get, Post, Put, Delete, Head, Trace, Connect, Patch, Extension Str]
+
+Header : {
+    name : Str,
+    value : Str,
+}
 
 ## Create a HTTP response with the required status code.
 statusResponse : U16 -> Response
@@ -63,7 +81,7 @@ pathSegments = \url ->
 ## Prepend to the list of response headers.
 ##
 ## No validation is done to check for duplicate headers.
-prependHeader : Response, { name : Str, value : Str } -> Response
+prependHeader : Response, Header -> Response
 prependHeader = \response, header ->
     headers = List.prepend response.headers header
     { response & headers }
@@ -72,7 +90,7 @@ prependHeader = \response, header ->
 ##
 ## Returns an empty response with status code 405: Method not allowed
 ## if the method is not correct.
-requireMethod : Response, _, _ -> Response
+requireMethod : Response, Request, Method -> Response
 requireMethod = \next, req, method ->
     if (req.method == method) then
         next
