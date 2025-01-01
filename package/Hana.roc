@@ -6,10 +6,12 @@ module [
     htmlResponse,
     prependResponseHeader,
     prependRequestHeader,
+    setMethod,
     ok,
     badRequest,
     notFound,
     requireMethod,
+    handleHead,
 ]
 
 ## Internal types based on the basic-webserver implementation.
@@ -105,6 +107,26 @@ requireMethod = \next, req, method ->
         next
     else
         statusResponse 405
+
+## Set the method of the request.
+##
+setMethod : Request, Method -> Request
+setMethod = \request, method ->
+    { request & method }
+
+## Middleware that converts `Head` requests to `Get` requests.
+##
+## The `X-Original-Method` header is set to `"HEAD"` for requests that were
+## originally `HEAD` requests.
+handleHead : Request -> Request
+handleHead = \request ->
+    when request.method is
+        Head ->
+            request
+            |> setMethod Get
+            |> prependRequestHeader { name: "X-Original-Method", value: "HEAD" }
+
+        _ -> request
 
 # Tests
 
@@ -203,6 +225,54 @@ expect
         headers: [
             { name: "X-Roc-Package", value: "hana" },
             { name: "Content-Type", value: "text/plain; charset=utf-8" },
+        ],
+        url: "",
+        mimeType: "",
+        body: [],
+        timeout: NoTimeout,
+    }
+    actual == expected
+
+# setMethod tests
+expect
+    actual =
+        {
+            method: Head,
+            headers: [],
+            url: "",
+            mimeType: "",
+            body: [],
+            timeout: NoTimeout,
+        }
+        |> setMethod Get
+
+    expected = {
+        method: Get,
+        headers: [],
+        url: "",
+        mimeType: "",
+        body: [],
+        timeout: NoTimeout,
+    }
+    actual == expected
+
+# handleHead tests
+expect
+    actual =
+        {
+            method: Head,
+            headers: [],
+            url: "",
+            mimeType: "",
+            body: [],
+            timeout: NoTimeout,
+        }
+        |> handleHead
+
+    expected = {
+        method: Get,
+        headers: [
+            { name: "X-Original-Method", value: "HEAD" },
         ],
         url: "",
         mimeType: "",
