@@ -4,7 +4,8 @@ module [
     jsonResponse,
     pathSegments,
     htmlResponse,
-    prependHeader,
+    prependResponseHeader,
+    prependRequestHeader,
     ok,
     badRequest,
     notFound,
@@ -81,10 +82,18 @@ pathSegments = \url ->
 ## Prepend to the list of response headers.
 ##
 ## No validation is done to check for duplicate headers.
-prependHeader : Response, Header -> Response
-prependHeader = \response, header ->
+prependResponseHeader : Response, Header -> Response
+prependResponseHeader = \response, header ->
     headers = List.prepend response.headers header
     { response & headers }
+
+## Prepend to the list of request headers.
+##
+## No validation is done to check for duplicate headers.
+prependRequestHeader : Request, Header -> Request
+prependRequestHeader = \request, header ->
+    headers = List.prepend request.headers header
+    { request & headers }
 
 ## Middleware that ensures the request has a specific HTTP method.
 ##
@@ -98,6 +107,8 @@ requireMethod = \next, req, method ->
         statusResponse 405
 
 # Tests
+
+# Response tests
 expect
     actual = statusResponse 200
     expected = { status: 200, headers: [], body: [] }
@@ -133,6 +144,7 @@ expect
     expected = { status: 200, headers: [], body: [] }
     actual == expected
 
+# pathSegments tests
 expect
     actual = pathSegments "/"
     expected = []
@@ -157,11 +169,12 @@ expect
     expected = ["test", "1"]
     actual == expected
 
+# prepend headers tests
 expect
     actual =
         statusResponse 200
-        |> prependHeader { name: "Content-Type", value: "text/html; charset=utf-8" }
-        |> prependHeader { name: "X-Roc-Package", value: "hana" }
+        |> prependResponseHeader { name: "Content-Type", value: "text/html; charset=utf-8" }
+        |> prependResponseHeader { name: "X-Roc-Package", value: "hana" }
 
     expected = {
         status: 200,
@@ -170,5 +183,30 @@ expect
             { name: "Content-Type", value: "text/html; charset=utf-8" },
         ],
         body: [],
+    }
+    actual == expected
+
+expect
+    actual =
+        {
+            method: Get,
+            headers: [{ name: "Content-Type", value: "text/plain; charset=utf-8" }],
+            url: "",
+            mimeType: "",
+            body: [],
+            timeout: NoTimeout,
+        }
+        |> prependRequestHeader { name: "X-Roc-Package", value: "hana" }
+
+    expected = {
+        method: Get,
+        headers: [
+            { name: "X-Roc-Package", value: "hana" },
+            { name: "Content-Type", value: "text/plain; charset=utf-8" },
+        ],
+        url: "",
+        mimeType: "",
+        body: [],
+        timeout: NoTimeout,
     }
     actual == expected
