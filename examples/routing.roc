@@ -25,6 +25,8 @@ respond = \req, _ ->
             [] -> Hana.statusResponse 200
             # matches "/flower"
             ["flower"] -> Hana.textResponse 200 "this is the /flower route"
+            # matches "/petal" for GET requests only
+            ["petal"] -> handler req
             # matches "/flower/rose"
             ["flower", "rose"] -> Hana.textResponse 200 "this is the /flower/rose route"
             # matches "/blossom/:colour"
@@ -33,3 +35,8 @@ respond = \req, _ ->
             _ -> Hana.statusResponse 404
 
     Task.ok response
+
+## Handler for the "/petal" route.
+handler = \req ->
+    Hana.textResponse 200 "this is the /petal route"
+    |> Hana.requireMethod req Get
