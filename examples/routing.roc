@@ -4,7 +4,6 @@ app [Model, server] {
 }
 
 import pf.Http exposing [Request, Response]
-import pf.Url
 import hana.Hana
 
 Model : {}
@@ -14,13 +13,8 @@ server = { init: Task.ok {}, respond }
 respond : Request, Model -> Task Response [ServerErr Str]_
 respond = \req, _ ->
 
-    url =
-        req.url
-        |> Url.fromStr
-        |> Url.path
-
     response =
-        when Hana.pathSegments url is
+        when Hana.pathSegments req.url is
             # matches "/"
             [] -> Hana.statusResponse 200
             # matches "/flower"
