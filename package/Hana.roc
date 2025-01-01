@@ -8,6 +8,7 @@ module [
     ok,
     badRequest,
     notFound,
+    requireMethod,
 ]
 
 ## Internal type based on the basic-webserver implementation.
@@ -66,6 +67,17 @@ prependHeader : Response, { name : Str, value : Str } -> Response
 prependHeader = \response, header ->
     headers = List.prepend response.headers header
     { response & headers }
+
+## Middleware that ensures the request has a specific HTTP method.
+##
+## Returns an empty response with status code 405: Method not allowed
+## if the method is not correct.
+requireMethod : Response, _, _ -> Response
+requireMethod = \next, req, method ->
+    if (req.method == method) then
+        next
+    else
+        statusResponse 405
 
 # Tests
 expect
