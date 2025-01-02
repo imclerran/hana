@@ -24,7 +24,7 @@ respond = \req, _ ->
             # matches "/flower/rose"
             ["flower", "rose"] -> Hana.textResponse 200 "this is the /flower/rose route"
             # matches "/blossom/:colour"
-            ["blossom", colour] -> Hana.textResponse 200 "this is the /blossom route with colour: $(colour)"
+            ["blossom", colour] -> blossomHandler req colour
             # matches all other paths
             _ -> Hana.statusResponse 404
 
@@ -34,3 +34,9 @@ respond = \req, _ ->
 handler = \req ->
     Hana.textResponse 200 "this is the /petal route"
     |> Hana.requireMethod req Get
+
+blossomHandler = \req, colour ->
+    when req.method is
+        Get -> Hana.textResponse 200 "GET /blossom route with colour: $(colour)"
+        Post -> Hana.textResponse 200 "POST /blossom route with colour: $(colour)"
+        _ -> Hana.methodNotAllowed [Get, Post]
