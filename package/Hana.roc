@@ -10,6 +10,7 @@ module [
     ok,
     badRequest,
     notFound,
+    methodNotAllowed,
     requireMethod,
     handleHead,
 ]
@@ -73,6 +74,34 @@ badRequest = { status: 400, body: [], headers: [] }
 ok : Response
 ok = { status: 200, body: [], headers: [] }
 
+## Create an empty response with status code 405: Method Not Allowed.
+##
+## The `allow` header will be set to a comma separated list of the permitted methods.
+methodNotAllowed : List Method -> Response
+methodNotAllowed = \allowed ->
+    methods =
+        allowed
+        |> List.map methodToStr
+        |> Str.joinWith ", "
+
+    statusResponse 405
+    |> prependResponseHeader { name: "allow", value: methods }
+
+## Convert a HTTP Method to an uppercase string.
+methodToStr : Method -> Str
+methodToStr = \method ->
+    when method is
+        Options -> "OPTIONS"
+        Get -> "GET"
+        Post -> "POST"
+        Put -> "PUT"
+        Delete -> "DELETE"
+        Head -> "HEAD"
+        Trace -> "TRACE"
+        Connect -> "CONNECT"
+        Patch -> "PATCH"
+        Extension extension -> extension
+
 ## Get the path segments from the request url.
 pathSegments : Str -> List Str
 pathSegments = \url ->
@@ -106,7 +135,7 @@ requireMethod = \next, req, method ->
     if (req.method == method) then
         next
     else
-        statusResponse 405
+        methodNotAllowed [method]
 
 ## Set the method of the request.
 ##
