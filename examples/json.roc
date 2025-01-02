@@ -47,4 +47,4 @@ handle_json = \req ->
             Ok record -> Hana.jsonResponse 200 (Str.toUtf8 "{\"full_name\": \"$(record.first_name) $(record.last_name)\"}")
             Err e -> Hana.jsonResponse 401 (Str.toUtf8 "{\"error\": \"failed to decode: $(Inspect.toStr e)\"}")
     else
-        Hana.statusResponse 405
+        Hana.methodNotAllowed [Get, Post]
