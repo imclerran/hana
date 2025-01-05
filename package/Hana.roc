@@ -21,13 +21,10 @@ Response : { status : U16, headers : List Header, body : List U8 }
 Request : {
     method : Method,
     headers : List Header,
-    url : Str,
-    mimeType : Str,
+    uri : Str,
     body : List U8,
-    timeout : TimeoutConfig,
+    timeout_ms : [TimeoutMilliseconds U64, NoTimeout],
 }
-
-TimeoutConfig : [TimeoutMilliseconds U64, NoTimeout]
 
 Method : [OPTIONS, GET, POST, PUT, DELETE, HEAD, TRACE, CONNECT, PATCH, EXTENSION Str]
 
@@ -242,10 +239,9 @@ expect
         {
             method: GET,
             headers: [{ name: "Content-Type", value: "text/plain; charset=utf-8" }],
-            url: "",
-            mimeType: "",
+            uri: "",
             body: [],
-            timeout: NoTimeout,
+            timeout_ms: NoTimeout,
         }
         |> prepend_request_header { name: "X-Roc-Package", value: "hana" }
 
@@ -255,10 +251,9 @@ expect
             { name: "X-Roc-Package", value: "hana" },
             { name: "Content-Type", value: "text/plain; charset=utf-8" },
         ],
-        url: "",
-        mimeType: "",
+        uri: "",
         body: [],
-        timeout: NoTimeout,
+        timeout_ms: NoTimeout,
     }
     actual == expected
 
@@ -268,20 +263,18 @@ expect
         {
             method: HEAD,
             headers: [],
-            url: "",
-            mimeType: "",
+            uri: "",
             body: [],
-            timeout: NoTimeout,
+            timeout_ms: NoTimeout,
         }
         |> set_method GET
 
     expected = {
         method: GET,
         headers: [],
-        url: "",
-        mimeType: "",
+        uri: "",
         body: [],
-        timeout: NoTimeout,
+        timeout_ms: NoTimeout,
     }
     actual == expected
 
@@ -291,10 +284,9 @@ expect
         {
             method: HEAD,
             headers: [],
-            url: "",
-            mimeType: "",
+            uri: "",
             body: [],
-            timeout: NoTimeout,
+            timeout_ms: NoTimeout,
         }
         |> handle_head
 
@@ -303,9 +295,8 @@ expect
         headers: [
             { name: "X-Original-Method", value: "HEAD" },
         ],
-        url: "",
-        mimeType: "",
+        uri: "",
         body: [],
-        timeout: NoTimeout,
+        timeout_ms: NoTimeout,
     }
     actual == expected
