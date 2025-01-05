@@ -29,7 +29,7 @@ Request : {
 
 TimeoutConfig : [TimeoutMilliseconds U64, NoTimeout]
 
-Method : [Options, Get, Post, Put, Delete, Head, Trace, Connect, Patch, Extension Str]
+Method : [OPTIONS, GET, POST, PUT, DELETE, HEAD, TRACE, CONNECT, PATCH, EXTENSION Str]
 
 Header : {
     name : Str,
@@ -91,16 +91,16 @@ method_not_allowed = \allowed ->
 method_to_str : Method -> Str
 method_to_str = \method ->
     when method is
-        Options -> "OPTIONS"
-        Get -> "GET"
-        Post -> "POST"
-        Put -> "PUT"
-        Delete -> "DELETE"
-        Head -> "HEAD"
-        Trace -> "TRACE"
-        Connect -> "CONNECT"
-        Patch -> "PATCH"
-        Extension extension -> extension
+        OPTIONS -> "OPTIONS"
+        GET -> "GET"
+        POST -> "POST"
+        PUT -> "PUT"
+        DELETE -> "DELETE"
+        HEAD -> "HEAD"
+        TRACE -> "TRACE"
+        CONNECT -> "CONNECT"
+        PATCH -> "PATCH"
+        EXTENSION extension -> extension
 
 ## Get the path segments from the request url.
 path_segments : Str -> List Str
@@ -143,16 +143,16 @@ set_method : Request, Method -> Request
 set_method = \request, method ->
     { request & method }
 
-## Middleware that converts `Head` requests to `Get` requests.
+## Middleware that converts `HEAD` requests to `GET` requests.
 ##
 ## The `X-Original-Method` header is set to `"HEAD"` for requests that were
 ## originally `HEAD` requests.
 handle_head : Request -> Request
 handle_head = \request ->
     when request.method is
-        Head ->
+        HEAD ->
             request
-            |> set_method Get
+            |> set_method GET
             |> prepend_request_header { name: "X-Original-Method", value: "HEAD" }
 
         _ -> request
@@ -240,7 +240,7 @@ expect
 expect
     actual =
         {
-            method: Get,
+            method: GET,
             headers: [{ name: "Content-Type", value: "text/plain; charset=utf-8" }],
             url: "",
             mimeType: "",
@@ -250,7 +250,7 @@ expect
         |> prepend_request_header { name: "X-Roc-Package", value: "hana" }
 
     expected = {
-        method: Get,
+        method: GET,
         headers: [
             { name: "X-Roc-Package", value: "hana" },
             { name: "Content-Type", value: "text/plain; charset=utf-8" },
@@ -266,17 +266,17 @@ expect
 expect
     actual =
         {
-            method: Head,
+            method: HEAD,
             headers: [],
             url: "",
             mimeType: "",
             body: [],
             timeout: NoTimeout,
         }
-        |> set_method Get
+        |> set_method GET
 
     expected = {
-        method: Get,
+        method: GET,
         headers: [],
         url: "",
         mimeType: "",
@@ -289,7 +289,7 @@ expect
 expect
     actual =
         {
-            method: Head,
+            method: HEAD,
             headers: [],
             url: "",
             mimeType: "",
@@ -299,7 +299,7 @@ expect
         |> handle_head
 
     expected = {
-        method: Get,
+        method: GET,
         headers: [
             { name: "X-Original-Method", value: "HEAD" },
         ],
