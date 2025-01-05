@@ -1,18 +1,18 @@
 module [
-    statusResponse,
-    textResponse,
-    jsonResponse,
-    pathSegments,
-    htmlResponse,
-    prependResponseHeader,
-    prependRequestHeader,
-    setMethod,
+    status_response,
+    text_response,
+    json_response,
+    path_segments,
+    html_response,
+    prepend_response_header,
+    prepend_request_header,
+    set_method,
     ok,
-    badRequest,
-    notFound,
-    methodNotAllowed,
-    requireMethod,
-    handleHead,
+    bad_request,
+    not_found,
+    method_not_allowed,
+    require_method,
+    handle_head,
 ]
 
 ## Internal types based on the basic-webserver implementation.
@@ -37,38 +37,38 @@ Header : {
 }
 
 ## Create a HTTP response with the required status code.
-statusResponse : U16 -> Response
-statusResponse = \status ->
+status_response : U16 -> Response
+status_response = \status ->
     { status, headers: [], body: [] }
 
 ## Create a HTTP response with text content.
 ##
 ## The `content-type` header will be set to `text/plain`.
-textResponse : U16, Str -> Response
-textResponse = \status, body ->
+text_response : U16, Str -> Response
+text_response = \status, body ->
     { status, headers: [{ name: "Content-Type", value: "text/plain; charset=utf-8" }], body: Str.toUtf8 body }
 
 ## Create a HTTP response with JSON content.
 ##
 ## The `content-type` header will be set to `application/json`.
-jsonResponse : U16, List U8 -> Response
-jsonResponse = \status, body ->
+json_response : U16, List U8 -> Response
+json_response = \status, body ->
     { status, headers: [{ name: "Content-Type", value: "application/json; charset=utf-8" }], body: body }
 
 ## Create a HTTP response with HTML content.
 ##
 ## The `content-type` header will be set to `text/html`.
-htmlResponse : U16, List U8 -> Response
-htmlResponse = \status, body ->
+html_response : U16, List U8 -> Response
+html_response = \status, body ->
     { status, headers: [{ name: "Content-Type", value: "text/html; charset=utf-8" }], body: body }
 
 ## Create an empty response with status code 404: Not found.
-notFound : Response
-notFound = { status: 404, body: [], headers: [] }
+not_found : Response
+not_found = { status: 404, body: [], headers: [] }
 
 ## Create an empty response with status code 400: Bad request.
-badRequest : Response
-badRequest = { status: 400, body: [], headers: [] }
+bad_request : Response
+bad_request = { status: 400, body: [], headers: [] }
 
 ## Create an empty response with status code 200: OK.
 ok : Response
@@ -77,19 +77,19 @@ ok = { status: 200, body: [], headers: [] }
 ## Create an empty response with status code 405: Method Not Allowed.
 ##
 ## The `allow` header will be set to a comma separated list of the permitted methods.
-methodNotAllowed : List Method -> Response
-methodNotAllowed = \allowed ->
+method_not_allowed : List Method -> Response
+method_not_allowed = \allowed ->
     methods =
         allowed
-        |> List.map methodToStr
+        |> List.map method_to_str
         |> Str.joinWith ", "
 
-    statusResponse 405
-    |> prependResponseHeader { name: "allow", value: methods }
+    status_response 405
+    |> prepend_response_header { name: "allow", value: methods }
 
 ## Convert a HTTP Method to an uppercase string.
-methodToStr : Method -> Str
-methodToStr = \method ->
+method_to_str : Method -> Str
+method_to_str = \method ->
     when method is
         Options -> "OPTIONS"
         Get -> "GET"
@@ -103,8 +103,8 @@ methodToStr = \method ->
         Extension extension -> extension
 
 ## Get the path segments from the request url.
-pathSegments : Str -> List Str
-pathSegments = \url ->
+path_segments : Str -> List Str
+path_segments = \url ->
     url
     |> Str.splitOn "/"
     # This handles trailing slashes so that pattern matching for routing is simpler
@@ -113,16 +113,16 @@ pathSegments = \url ->
 ## Prepend to the list of response headers.
 ##
 ## No validation is done to check for duplicate headers.
-prependResponseHeader : Response, Header -> Response
-prependResponseHeader = \response, header ->
+prepend_response_header : Response, Header -> Response
+prepend_response_header = \response, header ->
     headers = List.prepend response.headers header
     { response & headers }
 
 ## Prepend to the list of request headers.
 ##
 ## No validation is done to check for duplicate headers.
-prependRequestHeader : Request, Header -> Request
-prependRequestHeader = \request, header ->
+prepend_request_header : Request, Header -> Request
+prepend_request_header = \request, header ->
     headers = List.prepend request.headers header
     { request & headers }
 
@@ -130,30 +130,30 @@ prependRequestHeader = \request, header ->
 ##
 ## Returns an empty response with status code 405: Method not allowed
 ## if the method is not correct.
-requireMethod : Response, Request, Method -> Response
-requireMethod = \next, req, method ->
+require_method : Response, Request, Method -> Response
+require_method = \next, req, method ->
     if (req.method == method) then
         next
     else
-        methodNotAllowed [method]
+        method_not_allowed [method]
 
 ## Set the method of the request.
 ##
-setMethod : Request, Method -> Request
-setMethod = \request, method ->
+set_method : Request, Method -> Request
+set_method = \request, method ->
     { request & method }
 
 ## Middleware that converts `Head` requests to `Get` requests.
 ##
 ## The `X-Original-Method` header is set to `"HEAD"` for requests that were
 ## originally `HEAD` requests.
-handleHead : Request -> Request
-handleHead = \request ->
+handle_head : Request -> Request
+handle_head = \request ->
     when request.method is
         Head ->
             request
-            |> setMethod Get
-            |> prependRequestHeader { name: "X-Original-Method", value: "HEAD" }
+            |> set_method Get
+            |> prepend_request_header { name: "X-Original-Method", value: "HEAD" }
 
         _ -> request
 
@@ -161,32 +161,32 @@ handleHead = \request ->
 
 # Response tests
 expect
-    actual = statusResponse 200
+    actual = status_response 200
     expected = { status: 200, headers: [], body: [] }
     actual == expected
 
 expect
-    actual = textResponse 200 "Hello World!"
+    actual = text_response 200 "Hello World!"
     expected = { status: 200, headers: [{ name: "Content-Type", value: "text/plain; charset=utf-8" }], body: Str.toUtf8 "Hello World!" }
     actual == expected
 
 expect
-    actual = jsonResponse 200 (Str.toUtf8 "{\"message\": \"Hello from Hana!\"}")
+    actual = json_response 200 (Str.toUtf8 "{\"message\": \"Hello from Hana!\"}")
     expected = { status: 200, headers: [{ name: "Content-Type", value: "application/json; charset=utf-8" }], body: Str.toUtf8 "{\"message\": \"Hello from Hana!\"}" }
     actual == expected
 
 expect
-    actual = htmlResponse 200 (Str.toUtf8 "<h1>Hello from Hana!</h1>")
+    actual = html_response 200 (Str.toUtf8 "<h1>Hello from Hana!</h1>")
     expected = { status: 200, headers: [{ name: "Content-Type", value: "text/html; charset=utf-8" }], body: Str.toUtf8 "<h1>Hello from Hana!</h1>" }
     actual == expected
 
 expect
-    actual = notFound
+    actual = not_found
     expected = { status: 404, headers: [], body: [] }
     actual == expected
 
 expect
-    actual = badRequest
+    actual = bad_request
     expected = { status: 400, headers: [], body: [] }
     actual == expected
 
@@ -197,35 +197,35 @@ expect
 
 # pathSegments tests
 expect
-    actual = pathSegments "/"
+    actual = path_segments "/"
     expected = []
     actual == expected
 
 expect
-    actual = pathSegments "/test"
+    actual = path_segments "/test"
     expected = ["test"]
     actual == expected
 
 expect
-    actual = pathSegments "/test/"
+    actual = path_segments "/test/"
     expected = ["test"]
     actual == expected
 
 expect
-    actual = pathSegments "/test//"
+    actual = path_segments "/test//"
     expected = ["test"]
     actual == expected
 expect
-    actual = pathSegments "/test/1"
+    actual = path_segments "/test/1"
     expected = ["test", "1"]
     actual == expected
 
 # prepend headers tests
 expect
     actual =
-        statusResponse 200
-        |> prependResponseHeader { name: "Content-Type", value: "text/html; charset=utf-8" }
-        |> prependResponseHeader { name: "X-Roc-Package", value: "hana" }
+        status_response 200
+        |> prepend_response_header { name: "Content-Type", value: "text/html; charset=utf-8" }
+        |> prepend_response_header { name: "X-Roc-Package", value: "hana" }
 
     expected = {
         status: 200,
@@ -247,7 +247,7 @@ expect
             body: [],
             timeout: NoTimeout,
         }
-        |> prependRequestHeader { name: "X-Roc-Package", value: "hana" }
+        |> prepend_request_header { name: "X-Roc-Package", value: "hana" }
 
     expected = {
         method: Get,
@@ -273,7 +273,7 @@ expect
             body: [],
             timeout: NoTimeout,
         }
-        |> setMethod Get
+        |> set_method Get
 
     expected = {
         method: Get,
@@ -296,7 +296,7 @@ expect
             body: [],
             timeout: NoTimeout,
         }
-        |> handleHead
+        |> handle_head
 
     expected = {
         method: Get,
