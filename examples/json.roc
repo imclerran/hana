@@ -1,5 +1,5 @@
-app [Model, server] {
-    pf: platform "https://github.com/roc-lang/basic-webserver/releases/download/0.10.0/BgDDIykwcg51W8HA58FE_BjdzgXVk--ucv6pVb_Adik.tar.br",
+app [Model, init!, respond!] {
+    pf: platform "https://github.com/roc-lang/basic-webserver/releases/download/0.11.0/yWHkcVUt_WydE1VswxKFmKFM5Tlu9uMn6ctPVYaas7I.tar.br",
     json: "https://github.com/lukewilliamboswell/roc-json/releases/download/0.11.0/z45Wzc-J39TLNweQUoLw3IGZtkQiEN3lTBv3BXErRjQ.tar.br",
     hana: "../package/main.roc",
 }
@@ -10,25 +10,26 @@ import hana.Hana
 
 Model : {}
 
-server = { init: Task.ok {}, respond }
+init! : {} => Result Model []
+init! = \{} -> Ok {}
 
-respond : Request, Model -> Task Response [ServerErr Str]_
-respond = \req, _ ->
+respond! : Request, Model -> Result Response [ServerErr Str]_
+respond! = \req, _ ->
 
     response =
-        when Hana.pathSegments req.url is
-            [] -> Hana.statusResponse 200
+        when Hana.path_segments req.uri is
+            [] -> Hana.status_response 200
             ["json"] -> handle_json req
-            _ -> Hana.statusResponse 404
+            _ -> Hana.status_response 404
 
-    Task.ok response
+    Ok response
 
 RequestPayload : { first_name : Str, last_name : Str }
 
 handle_json : Request -> Response
 handle_json = \req ->
 
-    if req.method == Get then
+    if req.method == GET then
         # Create a record of data
         data = { message: "Hello World!" }
 
@@ -36,15 +37,15 @@ handle_json = \req ->
         encoded = Encode.toBytes data Json.utf8
 
         # Return the JSON response with the utf-8 encoded record as the body
-        Hana.jsonResponse 200 encoded
-    else if req.method == Post then
+        Hana.json_response 200 encoded
+    else if req.method == POST then
         # Decode the request body into the RequestPayload type
         decoded : Decode.DecodeResult RequestPayload
         decoded = Decode.fromBytesPartial req.body Json.utf8
 
         # Pattern match on the result to return the required response
         when decoded.result is
-            Ok record -> Hana.jsonResponse 200 (Str.toUtf8 "{\"full_name\": \"$(record.first_name) $(record.last_name)\"}")
-            Err e -> Hana.jsonResponse 401 (Str.toUtf8 "{\"error\": \"failed to decode: $(Inspect.toStr e)\"}")
+            Ok record -> Hana.json_response 200 (Str.toUtf8 "{\"full_name\": \"$(record.first_name) $(record.last_name)\"}")
+            Err e -> Hana.json_response 401 (Str.toUtf8 "{\"error\": \"failed to decode: $(Inspect.toStr e)\"}")
     else
-        Hana.methodNotAllowed [Get, Post]
+        Hana.method_not_allowed [GET, POST]

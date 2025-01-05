@@ -1,5 +1,5 @@
-app [Model, server] {
-    pf: platform "https://github.com/roc-lang/basic-webserver/releases/download/0.10.0/BgDDIykwcg51W8HA58FE_BjdzgXVk--ucv6pVb_Adik.tar.br",
+app [Model, init!, respond!] {
+    pf: platform "https://github.com/roc-lang/basic-webserver/releases/download/0.11.0/yWHkcVUt_WydE1VswxKFmKFM5Tlu9uMn6ctPVYaas7I.tar.br",
     hana: "../package/main.roc",
 }
 
@@ -8,8 +8,9 @@ import hana.Hana
 
 Model : {}
 
-server = { init: Task.ok {}, respond }
+init! : {} => Result Model []
+init! = \{} -> Ok {}
 
-respond : Request, Model -> Task Response [ServerErr Str]_
-respond = \_req, _ ->
-    Task.ok (Hana.statusResponse 200)
+respond! : Request, Model -> Result Response [ServerErr Str]_
+respond! = \_req, _ ->
+    Ok (Hana.status_response 200)

@@ -1,5 +1,5 @@
-app [Model, server] {
-    pf: platform "https://github.com/roc-lang/basic-webserver/releases/download/0.10.0/BgDDIykwcg51W8HA58FE_BjdzgXVk--ucv6pVb_Adik.tar.br",
+app [Model, init!, respond!] {
+    pf: platform "https://github.com/roc-lang/basic-webserver/releases/download/0.11.0/yWHkcVUt_WydE1VswxKFmKFM5Tlu9uMn6ctPVYaas7I.tar.br",
     hana: "../package/main.roc",
 }
 
@@ -8,35 +8,36 @@ import hana.Hana
 
 Model : {}
 
-server = { init: Task.ok {}, respond }
+init! : {} => Result Model []
+init! = \{} -> Ok {}
 
-respond : Request, Model -> Task Response [ServerErr Str]_
-respond = \req, _ ->
+respond! : Request, Model -> Result Response [ServerErr Str]_
+respond! = \req, _ ->
 
     response =
-        when Hana.pathSegments req.url is
+        when Hana.path_segments req.uri is
             # matches "/"
-            [] -> Hana.statusResponse 200
+            [] -> Hana.status_response 200
             # matches "/flower"
-            ["flower"] -> Hana.textResponse 200 "this is the /flower route"
+            ["flower"] -> Hana.text_response 200 "this is the /flower route"
             # matches "/petal" for GET requests only
             ["petal"] -> handler req
             # matches "/flower/rose"
-            ["flower", "rose"] -> Hana.textResponse 200 "this is the /flower/rose route"
+            ["flower", "rose"] -> Hana.text_response 200 "this is the /flower/rose route"
             # matches "/blossom/:colour"
             ["blossom", colour] -> blossomHandler req colour
             # matches all other paths
-            _ -> Hana.statusResponse 404
+            _ -> Hana.status_response 404
 
-    Task.ok response
+    Ok response
 
 ## Handler for the "/petal" route.
 handler = \req ->
-    Hana.textResponse 200 "this is the /petal route"
-    |> Hana.requireMethod req Get
+    Hana.text_response 200 "this is the /petal route"
+    |> Hana.require_method req GET
 
 blossomHandler = \req, colour ->
     when req.method is
-        Get -> Hana.textResponse 200 "GET /blossom route with colour: $(colour)"
-        Post -> Hana.textResponse 200 "POST /blossom route with colour: $(colour)"
-        _ -> Hana.methodNotAllowed [Get, Post]
+        GET -> Hana.text_response 200 "GET /blossom route with colour: $(colour)"
+        POST -> Hana.text_response 200 "POST /blossom route with colour: $(colour)"
+        _ -> Hana.method_not_allowed [GET, POST]
