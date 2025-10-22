@@ -25,7 +25,7 @@ respond! = |req, _|
             # matches "/flower/rose"
             ["flower", "rose"] -> Hana.text_response(200, "this is the /flower/rose route")
             # matches "/blossom/:colour"
-            ["blossom", colour] -> blossomHandler(req, colour)
+            ["blossom", colour] -> blossom_handler(req, colour)
             # matches all other paths
             _ -> Hana.status_response(404)
 
@@ -36,7 +36,7 @@ handler = |req|
     Hana.text_response(200, "this is the /petal route")
     |> Hana.require_method(req, GET)
 
-blossomHandler = |req, colour|
+blossom_handler = |req, colour|
     when req.method is
         GET -> Hana.text_response(200, "GET /blossom route with colour: ${colour}")
         POST -> Hana.text_response(200, "POST /blossom route with colour: ${colour}")
