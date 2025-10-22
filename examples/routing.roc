@@ -15,13 +15,13 @@ respond! : Request, Model -> Result Response [ServerErr Str]
 respond! = |req, _|
 
     response =
-        when Hana.path_segments req.uri is
+        when Hana.path_segments(req.uri) is
             # matches "/"
             [] -> Hana.status_response(200)
             # matches "/flower"
             ["flower"] -> Hana.text_response(200, "this is the /flower route")
             # matches "/petal" for GET requests only
-            ["petal"] -> handler req
+            ["petal"] -> handler(req)
             # matches "/flower/rose"
             ["flower", "rose"] -> Hana.text_response(200, "this is the /flower/rose route")
             # matches "/blossom/:colour"
